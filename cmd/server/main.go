@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -18,4 +20,9 @@ func main() {
 	defer conn.Close()
 
 	fmt.Println("AMQP connection successful")
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+	<-signalChan
+	fmt.Println(" - Shutting down Peril server.")
 }
