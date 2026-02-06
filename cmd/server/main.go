@@ -10,19 +10,20 @@ import (
 )
 
 func main() {
+	const rabbitMQURL = "amqp://guest:guest@localhost:5672/"
+
 	fmt.Println("Starting Peril server...")
 
-	url := "amqp://guest:guest@localhost:5672/"
-	conn, err := amqp.Dial(url)
+	conn, err := amqp.Dial(rabbitMQURL)
 	if err != nil {
-		log.Fatal("Failed to make AMQP connection")
+		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
 	}
 	defer conn.Close()
 
-	fmt.Println("AMQP connection successful")
+	fmt.Println("Successfully connected to RabbitMQ")
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 	<-signalChan
-	fmt.Println(" - Shutting down Peril server.")
+	fmt.Println("Shutting down Peril server.")
 }
