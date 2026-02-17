@@ -8,14 +8,14 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+type Acktype int
+
 type SimpleQueueType int
 
 const (
 	SimpleQueueDurable SimpleQueueType = iota
 	SimpleQueueTransient
 )
-
-type Acktype int
 
 const (
 	Ack Acktype = iota
@@ -89,14 +89,22 @@ func SubscribeJSON[T any](
 			switch acktype {
 			case Ack:
 				err = message.Ack(false)
+				if err != nil {
+					fmt.Printf("failed to acknowledge message: %v\n", err)
+				}
+				fmt.Println("Ack")
 			case NackRequeue:
 				err = message.Nack(false, true)
+				if err != nil {
+					fmt.Printf("failed to acknowledge message: %v\n", err)
+				}
+				fmt.Println("NackDiscard")
 			case NackDiscard:
 				err = message.Nack(false, false)
-			}
-			if err != nil {
-				log.Println(err)
-				continue
+				if err != nil {
+					fmt.Printf("failed to acknowledge message: %v\n", err)
+				}
+				fmt.Println("NackRequeue")
 			}
 		}
 	}()
