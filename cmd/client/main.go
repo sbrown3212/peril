@@ -30,7 +30,7 @@ func main() {
 
 	gameState := gamelogic.NewGameState(username)
 
-	err = pubsub.SubScribeJSON(
+	err = pubsub.SubscribeJSON(
 		conn,
 		routing.ExchangePerilDirect,
 		"pause."+gameState.GetUsername(),

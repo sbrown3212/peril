@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -46,7 +47,7 @@ func DeclareAndBind(
 	return channel, queue, nil
 }
 
-func SubScribeJSON[T any](
+func SubscribeJSON[T any](
 	conn *amqp.Connection,
 	exchange,
 	queueName,
@@ -58,12 +59,14 @@ func SubScribeJSON[T any](
 		conn, exchange, queueName, key, queueType,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to declare and bind queue: %w", err)
 	}
 
-	deliveryChan, err := subscribeCh.Consume(queue.Name, "", false, false, false, false, nil)
+	deliveryChan, err := subscribeCh.Consume(
+		queue.Name, "", false, false, false, false, nil,
+	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to consume messages: %w", err)
 	}
 
 	go func() {
