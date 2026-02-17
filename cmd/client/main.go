@@ -89,6 +89,7 @@ func main() {
 			)
 			if err != nil {
 				fmt.Printf("error: %s\n", err)
+				continue
 			}
 
 			fmt.Printf("Moved %v units to %s\n", len(move.Units), move.ToLocation)
