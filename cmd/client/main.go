@@ -56,6 +56,11 @@ func main() {
 		log.Fatalf("failed to subscribe to army_move channel: %v", err)
 	}
 
+	armyMoveCh, err := conn.Channel()
+	if err != nil {
+		log.Fatalf("failed to create channel for army_moves: %v", err)
+	}
+
 	for {
 		input := gamelogic.GetInput()
 		if len(input) == 0 {
@@ -70,12 +75,24 @@ func main() {
 				continue
 			}
 		case "move":
-			_, err := gameState.CommandMove(input)
+			move, err := gameState.CommandMove(input)
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
-			fmt.Println("Move successful.")
+
+			err = pubsub.PublishJSON(
+				armyMoveCh,
+				string(routing.ExchangePerilTopic),
+				string(routing.ArmyMovesPrefix)+"."+gameState.GetUsername(),
+				move,
+			)
+			if err != nil {
+				fmt.Printf("error: %s\n", err)
+			}
+
+			fmt.Printf("Moved %v units to %s\n", len(move.Units), move.ToLocation)
+			fmt.Println("Move was published successfully")
 		case "status":
 			gameState.CommandStatus()
 		case "help":
