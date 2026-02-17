@@ -30,6 +30,7 @@ func main() {
 
 	gameState := gamelogic.NewGameState(username)
 
+	// Subscribe to "pause" queue
 	err = pubsub.SubscribeJSON(
 		conn,
 		routing.ExchangePerilDirect,
@@ -40,6 +41,19 @@ func main() {
 	)
 	if err != nil {
 		log.Fatalf("failed to subscribe to pause channel: %v", err)
+	}
+
+	// Subscribe to "army_move" channel
+	err = pubsub.SubscribeJSON(
+		conn,
+		string(routing.ExchangePerilTopic),
+		string(routing.ArmyMovesPrefix)+"."+gameState.GetUsername(),
+		string(routing.ArmyMovesPrefix)+".*",
+		pubsub.SimpleQueueTransient,
+		handlerMove(gameState),
+	)
+	if err != nil {
+		log.Fatalf("failed to subscribe to army_move channel: %v", err)
 	}
 
 	for {
