@@ -28,6 +28,11 @@ func main() {
 		log.Fatalf("Failed to get username: %s", err)
 	}
 
+	publishCh, err := conn.Channel()
+	if err != nil {
+		log.Fatalf("failed to create channel for army_moves: %v", err)
+	}
+
 	gameState := gamelogic.NewGameState(username)
 
 	// Subscribe to "pause" queue
@@ -50,15 +55,10 @@ func main() {
 		string(routing.ArmyMovesPrefix)+"."+gameState.GetUsername(),
 		string(routing.ArmyMovesPrefix)+".*",
 		pubsub.SimpleQueueTransient,
-		handlerMove(gameState),
+		handlerMove(gameState, publishCh),
 	)
 	if err != nil {
 		log.Fatalf("failed to subscribe to army_move channel: %v", err)
-	}
-
-	armyMoveCh, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("failed to create channel for army_moves: %v", err)
 	}
 
 	for {
@@ -82,7 +82,7 @@ func main() {
 			}
 
 			err = pubsub.PublishJSON(
-				armyMoveCh,
+				publishCh,
 				string(routing.ExchangePerilTopic),
 				string(routing.ArmyMovesPrefix)+"."+gameState.GetUsername(),
 				move,
