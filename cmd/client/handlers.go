@@ -28,7 +28,7 @@ func handlerMove(gs *gamelogic.GameState, ch *amqp.Channel) func(gamelogic.ArmyM
 		case gamelogic.MoveOutComeSafe:
 			return pubsub.Ack
 		case gamelogic.MoveOutcomeMakeWar:
-			pubsub.PublishJSON(
+			err := pubsub.PublishJSON(
 				ch,
 				routing.ExchangePerilTopic,
 				routing.WarRecognitionsPrefix+"."+gs.GetUsername(),
@@ -37,7 +37,11 @@ func handlerMove(gs *gamelogic.GameState, ch *amqp.Channel) func(gamelogic.ArmyM
 					Defender: gs.GetPlayerSnap(),
 				},
 			)
-			return pubsub.Ack
+			if err != nil {
+				fmt.Printf("error: %v\n", err)
+				return pubsub.NackRequeue
+			}
+			return pubsub.NackRequeue
 		case gamelogic.MoveOutcomeSamePlayer:
 			return pubsub.NackDiscard
 		default:
@@ -64,6 +68,7 @@ func handlerWar(gs *gamelogic.GameState) func(gamelogic.RecognitionOfWar) pubsub
 		case gamelogic.WarOutcomeDraw:
 			return pubsub.Ack
 		default:
+			fmt.Println("error: unknown war outcome")
 			return pubsub.NackDiscard
 		}
 	}
