@@ -45,10 +45,10 @@ func main() {
 		handlerPause(gameState),
 	)
 	if err != nil {
-		log.Fatalf("failed to subscribe to pause channel: %v", err)
+		log.Fatalf("failed to subscribe to pause queue: %v", err)
 	}
 
-	// Subscribe to "army_move" channel
+	// Subscribe to "army_move" queue
 	err = pubsub.SubscribeJSON(
 		conn,
 		string(routing.ExchangePerilTopic),
@@ -58,7 +58,20 @@ func main() {
 		handlerMove(gameState, publishCh),
 	)
 	if err != nil {
-		log.Fatalf("failed to subscribe to army_move channel: %v", err)
+		log.Fatalf("failed to subscribe to army_move queue: %v", err)
+	}
+
+	// Subscribe to "war" queue
+	err = pubsub.SubscribeJSON(
+		conn,
+		string(routing.ExchangePerilTopic),
+		string(routing.WarRecognitionsPrefix),
+		string(routing.WarRecognitionsPrefix)+".#",
+		pubsub.SimpleQueueDurable,
+		handlerWar(gameState),
+	)
+	if err != nil {
+		log.Fatalf("failed to subscribe to war queue: %v", err)
 	}
 
 	for {
