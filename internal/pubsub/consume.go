@@ -68,14 +68,14 @@ func subscribe[T any](
 	handler func(T) Acktype,
 	unmarshaller func([]byte) (T, error),
 ) error {
-	subscribeCh, queue, err := DeclareAndBind(
+	ch, queue, err := DeclareAndBind(
 		conn, exchange, queueName, key, queueType,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to declare and bind queue: %w", err)
 	}
 
-	deliveryChan, err := subscribeCh.Consume(
+	msgs, err := ch.Consume(
 		queue.Name, "", false, false, false, false, nil,
 	)
 	if err != nil {
@@ -83,7 +83,7 @@ func subscribe[T any](
 	}
 
 	go func() {
-		for message := range deliveryChan {
+		for message := range msgs {
 			data, err := unmarshaller(message.Body)
 			if err != nil {
 				log.Println(err)
