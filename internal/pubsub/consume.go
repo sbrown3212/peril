@@ -96,19 +96,16 @@ func subscribe[T any](
 				if err != nil {
 					fmt.Printf("failed to acknowledge message: %v\n", err)
 				}
-				fmt.Println("Ack")
 			case NackRequeue:
 				err = message.Nack(false, true)
 				if err != nil {
 					fmt.Printf("failed to acknowledge message: %v\n", err)
 				}
-				fmt.Println("NackDiscard")
 			case NackDiscard:
 				err = message.Nack(false, false)
 				if err != nil {
 					fmt.Printf("failed to acknowledge message: %v\n", err)
 				}
-				fmt.Println("NackRequeue")
 			}
 		}
 	}()
