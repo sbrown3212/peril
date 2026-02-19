@@ -39,7 +39,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create game log queue: %v", err)
 	}
-	fmt.Println("Game log queue declared and bound")
 
 	gamelogic.PrintServerHelp()
 
