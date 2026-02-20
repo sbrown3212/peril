@@ -75,6 +75,11 @@ func subscribe[T any](
 		return fmt.Errorf("failed to declare and bind queue: %w", err)
 	}
 
+	err = ch.Qos(10, 0, false)
+	if err != nil {
+		return fmt.Errorf("failed to set Qos: %w", err)
+	}
+
 	msgs, err := ch.Consume(
 		queue.Name, "", false, false, false, false, nil,
 	)
